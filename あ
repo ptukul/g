@@ -1,0 +1,757 @@
+def cTime_to_datetime(unixtime):
+
+    return datetime.datetime.fromtimestamp(int(str(unixtime)[:len(str(unixtime))-3]))
+
+admin =['u356f45dcbdd5261625061f9f26d2004a',clMID]
+
+owners = [""]
+
+#if clMID not in owners:
+
+#    python = sys.executable
+
+#    os.execl(python, python, *sys.argv)
+
+#==============================================================================#
+
+def lineBot(op):
+
+    try:
+
+        if op.type == 0:
+
+            return
+
+        if op.type == 5:
+
+            print ("[ 5 ] NOTIFIED ADD CONTACT")
+
+            if settings["autoAdd"] == True:
+
+                cl.findAndAddContactsByMid(op.param1)
+
+                cl.sendMessage(op.param1, "友達追加ありがとうございます！".format(str(cl.getContact(op.param1).displayName)))
+
+        if op.type == 11:
+
+            group = cl.getGroup(op.param1)
+
+            contact = cl.getContact(op.param2)
+
+            if settings["qrprotect"] == True:
+
+                if op.param2 in admin or op.param2 in ban["bots"]:
+
+                    pass
+
+                else:
+
+                    gs = cl.getGroup(op.param1)
+
+                    cl.kickoutFromGroup(op.param1,[op.param2])
+
+                    gs.preventJoinByTicket = True
+
+                    cl.updateGroup(gs)
+
+        if op.type == 13:
+
+            print ("[ 13 ] NOTIFIED INVITE GROUP")
+
+            if clMID in op.param3:
+
+                group = cl.getGroup(op.param1)
+
+                if settings["autoJoin"] == True:
+
+                    cl.acceptGroupInvitation(op.param1)
+
+            elif settings["invprotect"] == True:
+
+                if op.param2 in admin or op.param2 in ban["bots"]:
+
+                    pass
+
+                else:
+
+                    cl.cancelGroupInvitation(op.param1,[op.param3])
+
+            else:
+
+                group = cl.getGroup(op.param1)
+
+                gInviMids = []
+
+                for z in group.invitee:
+
+                    if z.mid in ban["blacklist"]:
+
+                        gInviMids.append(z.mid)
+
+                if gInviMids == []:
+
+                    pass
+
+                else:
+
+                    cl.cancelGroupInvitation(op.param1, gInviMids)
+
+                    cl.sendMessage(op.param1,"ブラリスユーザーの為キャンセルしました。")
+
+        if op.type == 17:
+
+            if op.param2 in admin or op.param2 in ban["bots"]:
+
+                return
+
+            ginfo = str(cl.getGroup(op.param1).name)
+
+            try:
+
+                strt = int(3)
+
+                akh = int(3)
+
+                akh = akh + 8
+
+                aa = """{"S":"""+json.dumps(str(strt))+""","E":"""+json.dumps(str(akh))+""","M":"""+json.dumps(op.param2)+"},"""
+
+                aa = (aa[:int(len(aa)-1)])
+
+                cl.sendMessage(op.param1, "@wanping さんが参加しました！"+ginfo , contentMetadata={'MENTION':'{"MENTIONEES":['+aa+']}'}, contentType=0)
+
+            except Exception as e:
+
+                print(str(e))
+
+        if op.type == 19:
+
+            msg = op.message
+
+            chiya = []
+
+            chiya.append(op.param2)
+
+            chiya.append(op.param3)
+
+            cmem = cl.getContacts(chiya)
+
+            zx = ""
+
+            zxc = ""
+
+            zx2 = []
+
+            xpesan ='警告!'
+
+            for x in range(len(cmem)):
+
+                xname = str(cmem[x].displayName)
+
+                pesan = ''
+
+                pesan2 = pesan+"@x が"
+
+                xlen = str(len(zxc)+len(xpesan))
+
+                xlen2 = str(len(zxc)+len(pesan2)+len(xpesan)-1)
+
+                zx = {'S':xlen, 'E':xlen2, 'M':cmem[x].mid}
+
+                zx2.append(zx)
+
+                zxc += pesan2
+
+            text = xpesan+ zxc + "を蹴りました！"
+
+            try:
+
+                cl.sendMessage(op.param1, text, contentMetadata={'MENTION':str('{"MENTIONEES":'+json.dumps(zx2).replace(' ','')+'}')}, contentType=0)
+
+            except:
+
+                cl.sendMessage(op.param1,"Notified kick out from group")
+
+            if op.param2 not in admin:
+
+                if op.param2 in ban["bots"]:
+
+                    pass
+
+                elif settings["protect"] == True:
+
+                    ban["blacklist"][op.param2] = True
+
+                    cl.kickoutFromGroup(op.param1,[op.param2])
+
+                    cl.inviteIntoGroup(op.param1,[op.param3])
+
+                else:
+
+                    cl.sendMessage(op.param1,"")
+
+            else:
+
+                cl.sendMessage(op.param1,"")
+
+        if op.type == 24:
+
+            print ("[ 24 ] NOTIFIED LEAVE ROOM")
+
+            if settings["autoLeave"] == True:
+
+                cl.leaveRoom(op.param1)
+
+#        if op.type == 25 :
+
+#            if msg.toType ==2:
+
+#                g = cl.getGroup(op.message.to)
+
+#                print ("sended:".format(str(g.name)) + str(msg.text))
+
+#            else:
+
+#                print ("sended:" + str(msg.text))
+
+#        if op.type == 26:
+
+#            msg =op.message
+
+#            pop = cl.getContact(msg._from)
+
+#            print ("replay:"+pop.displayName + ":" + str(msg.text))
+
+        if op.type == 26 or op.type == 25:
+
+            msg = op.message
+
+            text = msg.text
+
+            msg_id = msg.id
+
+            receiver = msg.to
+
+            sender = msg._from
+
+            if msg.toType == 0:
+
+                if sender != cl.profile.mid:
+
+                    to = sender
+
+                else:
+
+                    to = receiver
+
+            else:
+
+                to = receiver
+
+            if msg.contentType == 0:
+
+                if text is None:
+
+                    return
+
+#==============================================================================#
+
+            if sender in K0 or sender in owners:
+
+                if text.lower() == 'help':
+
+                    helpMessage = helpmessage()
+
+                    cl.sendMessage(to, str(helpMessage))
+
+                    cl.sendContact(to,"u356f45dcbdd5261625061f9f26d2004a")
+
+                elif text.lower() == 'bye':
+
+                    cl.sendMessage(to,"ByeBye")
+
+                    cl.leaveGroup(msg.to)
+
+#==============================================================================#
+
+                elif text.lower() == 'speed':
+
+                    start = time.time()
+
+                    cl.sendMessage(to, "計測中...")
+
+                    elapsed_time = time.time() - start
+
+                    cl.sendMessage(to,format(str(elapsed_time)) + "秒")
+
+                elif text.lower() == 'ログアウト':
+
+                    cl.sendMessage(to, "ログアウト中...")
+
+                    time.sleep(5)
+
+                    cl.sendMessage(to, "ログアウトしました。\n再ログインしてください。")
+
+                    restartBot()
+
+                elif text.lower() == '稼働時間':
+
+                    timeNow = time.time()
+
+                    runtime = timeNow - botStart
+
+                    runtime = format_timespan(runtime)
+
+                    cl.sendMessage(to, "動作時間： {}".format(str(runtime)))
+
+                elif text.lower() == '詳細':
+
+                    try:
+
+                        arr = []
+
+                        owner ="u356f45dcbdd5261625061f9f26d2004a"
+
+                        creator = cl.getContact(owner)
+
+                        contact = cl.getContact(clMID)
+
+                        grouplist = cl.getGroupIdsJoined()
+
+                        contactlist = cl.getAllContactIds()
+
+                        blockedlist = cl.getBlockedContactIds()
+
+                        ret_ = "╔══[ 半BOT販売垢 ]"
+
+                        ret_ += "\n╠ 使用者 : {}".format(contact.displayName)
+
+                        ret_ += "\n╠ 参加グル : {}".format(str(len(grouplist)))
+
+                        ret_ += "\n╠ 友達 : {}".format(str(len(contactlist)))
+
+                        ret_ += "\n╠ ブロック : {}".format(str(len(blockedlist)))
+
+                        ret_ += "\n╠══[ Adp半bot ]"
+
+                        ret_ += "\n╠ バージョン : β2.2 試用バージョン"
+
+                        ret_ += "\n╠ 製作者 : {}".format(creator.displayName)
+
+                        ret_ += "\n╚══[ ご使用ありがとうございます ]"
+
+                        cl.sendMessage(to, str(ret_))
+
+                    except Exception as e:
+
+                        cl.sendMessage(msg.to, str(e))
+
+#==============================================================================#
+
+                elif text.lower() == '設定確認':
+
+                    try:
+
+                        ret_ = "╔══[ 設定状態 ]"
+
+                        if settings["autoAdd"] == True: ret_ += "\n╠ 自動追加 ✅"
+
+                        else: ret_ += "\n╠ 自動追加 ❌"
+
+                        if settings["autoJoin"] == True: ret_ += "\n╠ 自動参加 ✅"
+
+                        else: ret_ += "\n╠ 自動参加 ❌"
+
+                        if settings["autoLeave"] == True: ret_ += "\n╠ 強制自動退出 ✅"
+
+                        else: ret_ += "\n╠ 強制自動退出 ❌"
+
+                        if settings["autoRead"] == True: ret_ += "\n╠ 自動既読 ✅"
+
+                        else: ret_ += "\n╠ 自動既読 ❌"
+
+                      else: ret_ += "\n╠ 自動参加 ❌"
+
+                        if settings["autoLeave"] == True: ret_ += "\n╠ 強制自動退出 ✅"
+
+                        else: ret_ += "\n╠ 強制自動退出 ❌"
+
+                        if settings["autoRead"] == True: ret_ += "\n╠ 自動既読 ✅"
+
+                        else: ret_ += "\n╠ 自動既読 ❌"
+
+                        if settings["protect"] ==True: ret_+="\n╠ 蹴り保護 ✅"
+
+                        else: ret_ += "\n╠ 蹴り保護 ❌"
+
+                        if settings["qrprotect"] ==True: ret_+="\n╠ URL保護 ✅"
+
+                        else: ret_ += "\n╠ URL保護 ❌"
+
+                        if settings["invprotect"] ==True: ret_+="\n╠ 招待保護 ✅"
+
+                        else: ret_ += "\n╠ 招待保護 ❌"
+
+                        if settings["detectMention"] ==True: ret_+="\n╠ メンション自動返信 ✅"
+
+                        else: ret_ += "\n╠ メンション自動返信 ❌"
+
+                        if settings["reread"] ==True: ret_+="\n╠ 消去メッセージ読み込み ✅"
+
+                        else: ret_ += "\n╠ 消去メッセージ読み込み ❌"
+
+                        if settings["share"] ==True: ret_+="\n╠ 共有自動URL作成 ✅"
+
+                        else: ret_ += "\n╠ 共有自動URL作成 ❌"
+
+                        ret_ += "\n╚══[ Finish ]"
+
+                        cl.sendMessage(to, str(ret_))
+
+                    except Exception as e:
+
+                        cl.sendMessage(msg.to, str(e))
+
+                elif text.lower() == '自動追加 オン':
+
+                    settings["autoAdd"] = True
+
+                    cl.sendMessage(to, "自動追加をオンにしました！")
+
+                elif text.lower() == '自動追加 オフ':
+
+                    settings["autoAdd"] = False
+
+                    cl.sendMessage(to, "自動追加をオフにしました！")
+
+                elif text.lower() == '自動参加 オン':
+
+                    settings["autoJoin"] = True
+
+                    cl.sendMessage(to, "自動参加をオンにしました！")
+
+                elif text.lower() == '自動参加 オフ':
+
+                    settings["autoJoin"] = False
+
+                    cl.sendMessage(to, "自動参加をオフにしました！")
+
+                elif text.lower() == '自動退出 オン':
+
+                    settings["autoLeave"] = True
+
+                    cl.sendMessage(to, "強制自動退出をオンにしました！")
+
+                elif text.lower() == '自動退出 オフ':
+
+                    settings["autoLeave"] = False
+
+                    cl.sendMessage(to, "強制自動退出をオフにしました！")
+
+                elif text.lower() == '自動既読 オン':
+
+                    settings["autoRead"] = True
+
+                    cl.sendMessage(to, "自動既読をオンにしました！")
+
+                elif text.lower() == '自動既読 オフ':
+
+                    settings["autoRead"] = False
+
+                    cl.sendMessage(to, "自動既読をオフにしました！")
+
+                elif text.lower() == '復元 オン':
+
+                    settings["reread"] = True
+
+                    cl.sendMessage(to,"消去メッセージ読み込みをオンにしました！")
+
+                elif text.lower() == '復元 オフ':
+
+                    settings["reread"] = False
+
+                    cl.sendMessage(to,"消去メッセージ読み込みをオフにしました！")
+
+                elif text.lower() == '蹴り保護 オン':
+
+                    settings["protect"] = True
+
+                    cl.sendMessage(to, "蹴り保護オンにしました！")
+
+                elif text.lower() == '蹴り保護 オフ':
+
+                    settings["protect"] = False
+
+                    cl.sendMessage(to, "蹴り保護オフにしました！")
+
+                elif text.lower() == '共有 オン':
+
+                    settings["share"] = True
+
+                    cl.sendMessage(to, "共有自動URL作成オン")
+
+                elif text.lower() == '共有 オフ':
+
+                    settings["share"] = False
+
+                    cl.sendMessage(to, "共有自動URL作成オフ")
+
+                elif text.lower() == 'メンション自動返信 オン':
+
+                    settings["detectMention"] = True
+
+                    cl.sendMessage(to, "メンション自動返信をオンにしました！")
+
+                elif text.lower() == 'メンション自動返信 オフ':
+
+                    settings["detectMention"] = False
+
+                    cl.sendMessage(to, "メンション自動返信をオフにしました！")
+
+                elif text.lower() == 'うらる保護 オン':
+
+                    settings["qrprotect"] = True
+
+                    cl.sendMessage(to, "うらる保護オンにしました！")
+
+                elif text.lower() == 'うらる保護 オフ':
+
+                    settings["qrprotect"] = False
+
+                    cl.sendMessage(to, "うらる保護オフにしました！")
+
+                elif text.lower() == '招待保護 オン':
+
+                    settings["invprotect"] = True
+
+                    cl.sendMessage(to, "招待保護をオンにしました！")
+
+                elif text.lower() == '招待保護 オフ':
+
+                    settings["invprotect"] = False
+
+                    cl.sendMessage(to, "招待保護をオフにしました！")
+
+                elif text.lower() == 'mid取得 オン':
+
+                    settings["getmid"] = True
+
+                    cl.sendMessage(to, "mid取得をオンにしました！")
+
+                elif text.lower() == 'mid取得 オフ':
+
+                    settings["getmid"] = False
+
+                    cl.sendMessage(to, "mid取得をオフにしました！")
+
+                elif text.lower() == 'ノート オン':
+
+                    settings["note"] = True
+
+                    cl.sendMessage(to, "ノート自動URL作成オン")
+
+                elif text.lower() == 'ノート オフ':
+
+                    settings["note"] = False
+
+                    cl.sendMessage(to, "ノート自動URL作成オフ")
+
+                elif text.lower() == '全保護 オン':
+
+                    settings["protect"] = True
+
+                    settings["qrprotect"] = True
+
+                    settings["invprotect"] = True
+
+                    cl.sendMessage(to, "蹴り、URL、招待保護をオンにしました")
+
+                elif text.lower() == '作者':
+
+                    cl.sendMessage(msg.to,"こちらが作者だよ。")
+
+                    cl.sendContact(to,"u356f45dcbdd5261625061f9f26d2004a")
+
+                if text.lower() == 'ヘルプ':
+
+                    cl.sendFile(to,"help.py")
+
+                    cl.sendContact(to,"u356f45dcbdd5261625061f9f26d2004a")
+
+                    
+
+                elif text.lower() == '利用規約':
+
+                    cl.sendMessage(to, "利用規約および関連法規1.このBOTは有料半BOT4です。2.有料半BOTはログアウトしてしまったら何度でもログインできますので、ご安心ください。3.尚、半BOTはLINEの規約違反ですので、規制に掛かるこも稀にあります。ですが、こちらは責任は取りませんので、ご了承ください。4.規制についてはこちらも改善して行きます。m(_ _)m 5.もしログアウトしてしまったら下の連絡先又は半BOTグループなどで、再ログインできます。ご安心ください。m(_ _)m 6.このBOTの処理速度は0.01〜0.03前後です。ご確認ください。────以上が利用規約および関連法規でした。────")
+
+                    cl.sendContact(to,"u356f45dcbdd5261625061f9f26d2004a")
+
+                elif text.lower() == '全保護 オフ':
+
+                    settings["protect"] = False
+
+                    settings["qrprotect"] = False
+
+                    settings["invprotect"] = False
+
+                    cl.sendMessage(to, "蹴り、URL、招待保護をオフにしました")
+
+#==============================================================================#
+
+                elif msg.text.lower().startswith("権限追加 "):
+
+                    MENTION = eval(msg.contentMetadata['MENTION'])
+
+                    inkey = MENTION['MENTIONEES'][0]['M']
+
+                    admin.append(str(inkey))
+
+                    cl.sendMessage(to, "権限者を追加しました！")
+
+                elif msg.text.lower().startswith("権限削除 "):
+
+                    MENTION = eval(msg.contentMetadata['MENTION'])
+
+                    inkey = MENTION['MENTIONEES'][0]['M']
+
+                    admin.remove(str(inkey))
+
+                    cl.sendMessage(to, "権限者を消去しました！")
+
+                elif text.lower() == '権限リスト':
+
+                    if admin == ['u356f45dcbdd5261625061f9f26d2004a']:
+
+                        cl.sendMessage(to,"権限者はいません！")
+
+                    else:
+
+                        mc = "╔══[ Admin List ]"
+
+                        for mi_d in admin:
+
+                            mc += "\n╠ "+cl.getContact(mi_d).displayName
+
+                        cl.sendMessage(to,mc + "\n╚══[ Finish ]")
+
+                elif msg.text.lower().startswith("invite "):
+
+                    targets = []
+
+                    key = eval(msg.contentMetadata["MENTION"])
+
+                    key["MENTIONEES"][0]["M"]
+
+                    for x in key["MENTIONEES"]:
+
+                        targets.append(x["M"])
+
+                    G = cl.getGroup
+
+                    cl.inviteIntoGroup(to,targets)
+
+                elif ("Say " in msg.text):
+
+                    x = text.split(' ',2)
+
+                    c = int(x[2])
+
+                    for c in range(c):
+
+                        cl.sendMessage(to,x[1])
+
+                elif msg.text.lower().startswith("tag "):
+
+                    MENTION = eval(msg.contentMetadata['MENTION'])
+
+                    inkey = MENTION['MENTIONEES'][0]['M']
+
+                    x = text.split(' ',2)
+
+                    c = int(x[2])
+
+                    for c in range(c):
+
+                        sendMessageWithMention(to, inkey)
+
+                elif msg.text.lower().startswith("招待者追加 "):
+
+                    MENTION = eval(msg.contentMetadata['MENTION'])
+
+                    inkey = MENTION['MENTIONEES'][0]['M']
+
+                    ban["bots"].append(str(inkey))
+
+                    cl.sendMessage(to, "招待者を追加しました！")
+
+                elif msg.text.lower().startswith("招待者削除 "):
+
+                    MENTION = eval(msg.contentMetadata['MENTION'])
+
+                    inkey = MENTION['MENTIONEES'][0]['M']
+
+                    ban["bots"].remove(str(inkey))
+
+                    cl.sendMessage(to, "招待者を削除しました！")
+
+                elif text.lower() == '招待者リスト':
+
+                    if ban["bots"] == []:
+
+                        cl.sendMessage(to,"招待者はいません！")
+
+                    else:
+
+                        mc = "╔══[ Inviter List ]"
+
+                        for mi_d in ban["bots"]:
+
+                            mc += "\n╠ "+cl.getContact(mi_d).displayName
+
+                        cl.sendMessage(to,mc + "\n╚══[ Finish ]")
+
+                elif text.lower() == '入室':
+
+                    if msg.toType == 2:
+
+                        G = cl.getGroup
+
+                        cl.inviteIntoGroup(to,ban["bots"])
+
+                elif msg.text.lower().startswith("ii "):
+
+                    MENTION = eval(msg.contentMetadata['MENTION'])
+
+                    inkey = MENTION['MENTIONEES'][0]['M']
+
+                    cl.createGroup("fuck",[inkey])
+
+                    cl.leaveGroup(op.param1)
+
+#==============================================================================#
+
+                elif text.lower() == 'me':
+
+                    if msg.toType == 2 or msg.toType == 1:
+
+                        sendMessageWithMention(to, sender)
+
+                        cl.sendContact(to, sender)
+
+                    else:
+
+                        cl.sendContact(to,sender)
+
+                elif text.lower() == 'mid':
+
+                    cl.sendMessage(msg.to,"[MID]\n" +  sender)
+
+                elif text.lower() == '名前':
+
+                    me = cl.getContact(sender)
+
+                    cl.sendMessage(msg.to,"[Name]\n" + me.displayName)
+
+                elif text.lower() == 'ステコメ':
+
+                    me = cl.getContact(sender)
